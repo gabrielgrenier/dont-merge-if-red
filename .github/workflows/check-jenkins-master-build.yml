@@ -13,11 +13,18 @@ on:
         description: 'Branch to run workflow on'
         required: true
         default: 'main'
+  repository_dispatch:
+    types: [trigger_workflow]
 
 jobs:
   check-jenkins-build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.client_payload.branch || github.ref }}
+
       - name: Check Jenkins Build Status
         env:
           JENKINS_URL: ${{ secrets.JENKINS_URL }}
@@ -50,9 +57,9 @@ jobs:
             # Get the source branch of the PR (head.ref)
             source_branch=$(jq -r ".[] | select(.number == $pr) | .head.ref" pull_requests.json)
 
-            # Dispatch the workflow to the source branch of the PR (just the branch name)
+            # Dispatch the repository event to trigger the workflow
             curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github+json" \
-              "https://api.github.com/repos/${{ github.repository }}/actions/workflows/check-jenkins-master-build.yml/dispatches" \
-              -d "{\"ref\": \"refs/heads/$source_branch\"}"
+              "https://api.github.com/repos/${{ github.repository }}/dispatches" \
+              -d "{\"event_type\": \"trigger_workflow\", \"client_payload\": {\"branch\": \"$source_branch\"}}"
           done
