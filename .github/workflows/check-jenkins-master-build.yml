@@ -28,3 +28,4 @@ jobs:
 
           echo "$JENKINS_URL/job/master-build/lastBuild/api/json"
           echo "$JENKINS_USER:$JENKINS_TOKEN"
+          exit 1
