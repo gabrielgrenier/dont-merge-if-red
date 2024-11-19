@@ -7,6 +7,12 @@ on:
   push:
     branches:
       - "main"
+  workflow_dispatch:  # Manual trigger via GitHub UI or API
+    inputs:
+      branch:
+        description: 'Branch name to run the workflow on'
+        required: true
+        default: 'main'  # This is for manual triggers only
 
 jobs:
   check-jenkins-build:
