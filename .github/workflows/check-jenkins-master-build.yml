@@ -54,5 +54,5 @@ jobs:
             curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github+json" \
               "https://api.github.com/repos/${{ github.repository }}/actions/workflows/check-jenkins-master-build.yml/dispatches" \
-              -d "{\"ref\": \"$source_branch\"}"
+              -d "{\"ref\": \"refs/heads/$source_branch\"}"
           done
