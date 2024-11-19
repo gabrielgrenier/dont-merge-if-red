@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - "**"
+  push:
+    branches:
+      - "main"
 
 jobs:
   check-jenkins-build:
@@ -28,4 +31,28 @@ jobs:
 
           echo "$JENKINS_URL/job/master-build/lastBuild/api/json"
           echo "$JENKINS_USER:$JENKINS_TOKEN"
-          exit 1
+  
+  retrigger-pull-requests:
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      runs-on: ubuntu-latest
+      steps:
+        - name: Get Open Pull Requests
+          id: get-prs
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&base=master" \
+              > pull_requests.json
+
+        - name: Retrigger Workflows for Open PRs
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            pr_numbers=$(jq '.[].number' pull_requests.json)
+            for pr in $pr_numbers; do
+              curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/${{ github.repository }}/actions/workflows/check-jenkins-build.yml/dispatches" \
+                -d "{\"ref\": \"refs/pull/$pr/merge\"}"
+            done
