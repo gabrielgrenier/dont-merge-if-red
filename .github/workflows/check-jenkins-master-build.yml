@@ -8,8 +8,11 @@ on:
     branches:
       - "main"
   workflow_dispatch:
-    branches:
-      - '**'
+    inputs:
+      branch:
+        description: 'Branch to run workflow on'
+        required: true
+        default: 'main'
 
 jobs:
   check-jenkins-build:
@@ -21,17 +24,6 @@ jobs:
           JENKINS_USER: ${{ secrets.JENKINS_USER }}
           JENKINS_TOKEN: ${{ secrets.JENKINS_TOKEN }}
         run: |
-          # Get last build status for master branch job
-          # build_status=$(curl -s -u "$JENKINS_USER:$JENKINS_TOKEN" \
-          #  "$JENKINS_URL/job/master-build/lastBuild/api/json" | \
-          #  jq -r '.result')
-          
-          # Fail the workflow if build is not successful
-          # if [[ "$build_status" != "SUCCESS" ]]; then
-          #  echo "Last Jenkins build of master failed with status: $build_status"
-          #  exit 1
-          #fi
-
           echo "$JENKINS_URL/job/master-build/lastBuild/api/json"
           echo "$JENKINS_USER:$JENKINS_TOKEN"
   
@@ -64,5 +56,3 @@ jobs:
               "https://api.github.com/repos/${{ github.repository }}/actions/workflows/check-jenkins-master-build.yml/dispatches" \
               -d "{\"ref\": \"$source_branch\"}"
           done
-
-
