@@ -55,10 +55,11 @@ jobs:
             # Get the source branch of the PR (head.ref)
             source_branch=$(jq -r ".[] | select(.number == $pr) | .head.ref" pull_requests.json)
 
-            # Dispatch the workflow to the source branch of the PR
+            # Dispatch the workflow to the source branch of the PR (just the branch name)
             curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github+json" \
               "https://api.github.com/repos/${{ github.repository }}/actions/workflows/check-jenkins-master-build.yml/dispatches" \
-              -d "{\"ref\": \"refs/heads/$source_branch\"}"
+              -d "{\"ref\": \"$source_branch\"}"
           done
+
 
