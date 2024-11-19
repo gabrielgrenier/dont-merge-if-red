@@ -51,15 +51,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Loop through each open PR
-          pr_numbers=$(jq '.[].number' pull_requests.json)
-          for pr in $pr_numbers; do
-            # Get the source branch of the PR (head.ref)
-            source_branch=$(jq -r ".[] | select(.number == $pr) | .head.ref" pull_requests.json)
-
-            # Dispatch the repository event to trigger the workflow
-            curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              "https://api.github.com/repos/${{ github.repository }}/dispatches" \
-              -d "{\"event_type\": \"trigger_workflow\", \"client_payload\": {\"branch\": \"$source_branch\"}}"
+          # Get open PRs and dispatch workflow directly
+          curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&base=main" | \
+            jq -r '.[].head.ref' | \
+            while read -r source_branch; do
+              curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/${{ github.repository }}/actions/workflows/check-jenkins-master-build.yml/dispatches" \
+                -d "{\"ref\": \"$source_branch\"}"
           done
