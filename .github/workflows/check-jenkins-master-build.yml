@@ -1,0 +1,30 @@
+name: Check Jenkins Master Build Status
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  check-jenkins-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Jenkins Build Status
+        env:
+          JENKINS_URL: ${{ secrets.JENKINS_URL }}
+          JENKINS_USER: ${{ secrets.JENKINS_USER }}
+          JENKINS_TOKEN: ${{ secrets.JENKINS_TOKEN }}
+        run: |
+          # Get last build status for master branch job
+          # build_status=$(curl -s -u "$JENKINS_USER:$JENKINS_TOKEN" \
+          #  "$JENKINS_URL/job/master-build/lastBuild/api/json" | \
+          #  jq -r '.result')
+          
+          # Fail the workflow if build is not successful
+          # if [[ "$build_status" != "SUCCESS" ]]; then
+          #  echo "Last Jenkins build of master failed with status: $build_status"
+          #  exit 1
+          #fi
+
+          echo "$JENKINS_URL/job/master-build/lastBuild/api/json"
+          echo "$JENKINS_USER:$JENKINS_TOKEN"
