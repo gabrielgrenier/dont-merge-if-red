@@ -4,9 +4,6 @@ on:
   pull_request:
     branches:
       - "**"
-  push:
-    branches:
-      - "main"
   workflow_dispatch:
     branches:
       - "**"
@@ -34,22 +31,3 @@ jobs:
           #  echo "Jenkins master build is not green. Current status: $build_result"
           #  exit 1
           # fi
-  
-  retrigger-pull-requests:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Retrigger Workflows for Open PRs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Get open PRs and dispatch workflow directly
-          curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&base=main" | \
-            jq -r '.[].head.ref' | \
-            while read -r source_branch; do
-              curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
-                -H "Accept: application/vnd.github+json" \
-                "https://api.github.com/repos/${{ github.repository }}/actions/workflows/check-jenkins-master-build.yml/dispatches" \
-                -d "{\"ref\": \"$source_branch\"}"
-          done
