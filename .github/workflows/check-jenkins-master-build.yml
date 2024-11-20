@@ -1,9 +1,9 @@
 name: Check Jenkins Master Build Status
 
 on:
-  pull_request:
-    branches:
-      - "**"
+  #pull_request:
+  #  branches:
+  #    - "**"
   workflow_dispatch:
     branches:
       - "**"
@@ -31,3 +31,4 @@ jobs:
           #  echo "Jenkins master build is not green. Current status: $build_result"
           #  exit 1
           # fi
+          exit 1
