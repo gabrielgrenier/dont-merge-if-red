@@ -26,8 +26,14 @@ jobs:
           JENKINS_USER: ${{ secrets.JENKINS_USER }}
           JENKINS_TOKEN: ${{ secrets.JENKINS_TOKEN }}
         run: |
-          echo "$JENKINS_URL/job/master-build/lastBuild/api/json"
-          echo "$JENKINS_USER:$JENKINS_TOKEN"
+          # Fetch the last master build and check if it's green or not
+          # response=$(curl -s -u "$JENKINS_USER:$JENKINS_TOKEN" "$JENKINS_URL/job/master-build/lastBuild/api/json")
+          # build_result=$(echo "$response" | jq -r '.result')
+          
+          # if [ "$build_result" != "SUCCESS" ]; then
+          #  echo "Jenkins master build is not green. Current status: $build_result"
+          #  exit 1
+          # fi
   
   retrigger-pull-requests:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -42,8 +48,6 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&base=main" | \
             jq -r '.[].head.ref' | \
             while read -r source_branch; do
-              echo 'Branch:'
-              echo "{\"ref\": \"$source_branch\"}"
               curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
                 -H "Accept: application/vnd.github+json" \
                 "https://api.github.com/repos/${{ github.repository }}/actions/workflows/check-jenkins-master-build.yml/dispatches" \
