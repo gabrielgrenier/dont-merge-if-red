@@ -33,15 +33,6 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - name: Get Open Pull Requests
-        id: get-prs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&base=main" \
-            > pull_requests.json
-
       - name: Retrigger Workflows for Open PRs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
