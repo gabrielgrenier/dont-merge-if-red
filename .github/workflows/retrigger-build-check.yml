@@ -14,13 +14,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get open PRs and dispatch workflow directly
-          curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&base=main" | \
-            jq -r '.[].head.ref' | \
-            while read -r source_branch; do
-              curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
+          # Get open PRs
+          prs=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&base=main")
+          
+          # For each PR, get its check runs
+          echo "$prs" | jq -r '.[].number' | while read -r pr_number; do
+            # Get check runs for the specific PR
+            check_runs=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/commits/$(echo "$prs" | jq -r ".[] | select(.number == $pr_number) | .head.sha")/check-runs")
+            
+            # Rerequest each check run
+            echo "$check_runs" | jq -r '.check_runs[].id' | while read -r check_run_id; do
+              echo "Rerequesting check run $check_run_id for PR $pr_number"
+              curl -L -X POST \
                 -H "Accept: application/vnd.github+json" \
-                "https://api.github.com/repos/${{ github.repository }}/actions/workflows/check-jenkins-master-build.yml/dispatches" \
-                -d "{\"ref\": \"$source_branch\"}"
+                -H "Authorization: token $GITHUB_TOKEN" \
+                "https://api.github.com/repos/${{ github.repository }}/check-runs/$check_run_id/rerequest"
+            done
           done
