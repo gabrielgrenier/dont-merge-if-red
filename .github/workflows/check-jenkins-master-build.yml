@@ -8,14 +8,8 @@ on:
     branches:
       - "main"
   workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to run workflow on'
-        required: true
-        default: 'main'
-  repository_dispatch:
-    types: [trigger_workflow]
-
+    branches:
+      - "**"
 jobs:
   check-jenkins-build:
     runs-on: ubuntu-latest
