@@ -3,7 +3,7 @@ name: retrigger-builds-on-merges
 on:
   push:
     branches:
-      - "**"
+      - "main"
 
 jobs:
   retrigger-pull-requests:
