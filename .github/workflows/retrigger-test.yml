@@ -1,0 +1,18 @@
+name: Retrigger Build Check On PRs
+
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  retrigger-pull-requests:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run inline JavaScript
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log("Running inline JavaScript!");
+            console.log("The current branch is:", process.env.GITHUB_REF);
