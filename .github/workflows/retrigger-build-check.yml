@@ -7,10 +7,7 @@ on:
 
 jobs:
   retrigger-pull-requests:
-<<<<<<< Updated upstream
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-=======
->>>>>>> Stashed changes
     runs-on: ubuntu-latest
     steps:
       - name: Retrigger Workflows for Open PRs
