@@ -1,4 +1,4 @@
-name: Check Jenkins Master Build Status
+name: check-jenkins-master-build
 
 on:
   pull_request:

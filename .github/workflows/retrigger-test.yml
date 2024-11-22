@@ -18,7 +18,6 @@ jobs:
           script: |
             const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
             const repository = process.env.GITHUB_REPOSITORY;
-            console.log(`asdasdasdasd ${GITHUB_TOKEN}`);
             const pullsUrl = `https://api.github.com/repos/${repository}/pulls?state=open&base=main`;
 
             // fetch opened PRs
@@ -34,8 +33,10 @@ jobs:
                 throw new Error(`Failed to fetch PRs: ${pr_response.status} ${pr_response.statusText}`);
               }
 
-              const pr_response_data = await pr_response.json();
+              const prs = await pr_response.json();
 
-              console.log('API Response Data:', pr_response_data);
-              console.log('Pulls URL:', pullsUrl);
+              //console.log('API Response Data:', pr_response_data);
+              //console.log('Pulls URL:', pullsUrl);
+
+              prs.forEach(pr => console.log(pr));
             })();
