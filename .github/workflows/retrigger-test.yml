@@ -10,7 +10,7 @@ jobs:
     # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - name: Get the name of the branches of each opened PR
+      - name: Get the necessary informations and re-trigger the build checks
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/github-script@v6
@@ -34,22 +34,15 @@ jobs:
               }
 
               const prs = await pr_response.json();
+              const branch_names = [];
 
-              //console.log('API Response Data:', pr_response_data);
-              //console.log('Pulls URL:', pullsUrl);
+              // get the name of the branches with active PRs
+              prs.forEach(pr => {
+                let current_branch_name = pr.head.ref;
+                if(branch_names.indexOf(current_branch_name) === -1){
+                  branch_names.push(current_branch_name);
+                }
+              });
 
-              prs.forEach(pr => console.log(pr));
+              console.log(branch_names);
             })();
-            const sendVar = "test!!!!";  // This is the value we want to pass
-            console.log(`::set-output name=send_var::${sendVar}`);
-
-      - name: Get the last valid work flow for each branches
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const myVarFromStep1 = "${{ steps.step1.outputs.send_var }}";
-            console.log("Received variable from Step 1:", myVarFromStep1);
-
-            
