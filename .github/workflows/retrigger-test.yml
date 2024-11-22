@@ -10,7 +10,7 @@ jobs:
     # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - name: Run inline JavaScript
+      - name: Get the name of the branches of each opened PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/github-script@v6
@@ -39,4 +39,16 @@ jobs:
               //console.log('Pulls URL:', pullsUrl);
 
               prs.forEach(pr => console.log(pr));
+              core.setOutput("send_var", "test!!!!");
             })();
+
+      - name: Get the last valid work flow for each branches
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const myVarFromStep1 = "${{ steps.step1.outputs.send_var }}";
+            console.log("Received variable from Step 1:", myVarFromStep1);
+
+            
