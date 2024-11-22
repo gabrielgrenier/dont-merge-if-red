@@ -55,10 +55,17 @@ jobs:
                 throw new Error(`Failed to fetch PRs: ${workflow_response.status} ${workflow_response.statusText}`);
               }
 
-              const workflows = await workflow_response.json();
-              console.log(workflows)
+              const workflow_runs = await workflow_response.json().workflow_runs;
+              const job_urls = [];
 
               // get the last job URL for each workflow
+              branch_names.forEach(branch_name => {
+                const branch_run = workflow_runs.find(run => run.name === 'check-jenkins-master-build' && run.head_branch ==== branch_name);
+                job_urls.push(branch_run.jobs_url);
+              });
 
+
+              // get all the jobs ids
+              console.log(job_urls);
 
             })();
