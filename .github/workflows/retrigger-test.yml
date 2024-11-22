@@ -1,4 +1,4 @@
-name: Retrigger Build Check On PRs
+name: retrigger-builds-on-merges
 
 on:
   push:
@@ -14,5 +14,29 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            console.log("Running inline JavaScript!");
-            console.log("The current branch is:", process.env.GITHUB_REF);
+            const fetch = require('node-fetch');
+
+            const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+            const repository = process.env.GITHUB_REPOSITORY;
+
+            // API URLs
+            const pullsUrl = `https://api.github.com/repos/${repository}/pulls?state=open&base=main`;
+
+            // Fetch open PRs targeting the main branch
+            const fetchPulls = async () => {
+              const response = await fetch(pullsUrl, {
+                headers: {
+                  Authorization: `Bearer ${GITHUB_TOKEN}`,
+                  Accept: 'application/vnd.github+json',
+                },
+              });
+
+              if (!response.ok) {
+                throw new Error(`Failed to fetch PRs: ${response.status} ${response.statusText}`);
+              }
+
+              return response.json();
+            };
+
+            console.log(fetchPulls);
+            console.log(pullsUrl);
