@@ -18,17 +18,17 @@ jobs:
           script: |
             const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
             const repository = process.env.GITHUB_REPOSITORY;
-            const pullsUrl = `https://api.github.com/repos/${repository}/pulls?state=open&base=main`;
+            const prs_url = `https://api.github.com/repos/${repository}/pulls?state=open&base=main`;
+            const workflow_url = `https://api.github.com/repos/${repository}/actions/runs`;
 
             // fetch opened PRs
             (async () => {
-              const pr_response = await fetch(pullsUrl, {
+              const pr_response = await fetch(prs_url, {
                 headers: {
                   Authorization: `Bearer ${GITHUB_TOKEN}`,
                   Accept: 'application/vnd.github+json',
                 },
               });
-
               if (!pr_response.ok) {
                 throw new Error(`Failed to fetch PRs: ${pr_response.status} ${pr_response.statusText}`);
               }
@@ -44,5 +44,21 @@ jobs:
                 }
               });
 
-              console.log(branch_names);
+              // get the list of the workflow that were executed
+              const workflow_response = await fetch(workflow_url, {
+                headers: {
+                  Authorization: `Bearer ${GITHUB_TOKEN}`,
+                  Accept: 'application/vnd.github+json',
+                },
+              });
+              if (!workflow_response.ok) {
+                throw new Error(`Failed to fetch PRs: ${workflow_response.status} ${workflow_response.statusText}`);
+              }
+
+              const workflows = await workflow_response.json();
+              console.log(workflows)
+
+              // get the last job URL for each workflow
+
+
             })();
