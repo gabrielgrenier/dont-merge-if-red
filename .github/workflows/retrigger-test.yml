@@ -21,20 +21,20 @@ jobs:
             const pullsUrl = `https://api.github.com/repos/${repository}/pulls?state=open&base=main`;
 
             // Fetch open PRs targeting the main branch
-            const fetchPulls = async () => {
-              const response = await fetch(pullsUrl, {
+            async () => {
+              const pr_response = await fetch(pullsUrl, {
                 headers: {
                   Authorization: `Bearer ${GITHUB_TOKEN}`,
                   Accept: 'application/vnd.github+json',
                 },
               });
 
-              if (!response.ok) {
-                throw new Error(`Failed to fetch PRs: ${response.status} ${response.statusText}`);
+              if (!pr_response.ok) {
+                throw new Error(`Failed to fetch PRs: ${pr_response.status} ${pr_response.statusText}`);
               }
 
-              return response.json();
-            };
+              pr_response_data = response.json();
 
-            console.log(fetchPulls);
-            console.log(pullsUrl);
+              console.log(pr_response_data);
+              console.log(pullsUrl);
+            };
