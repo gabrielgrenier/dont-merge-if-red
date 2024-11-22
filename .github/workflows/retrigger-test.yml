@@ -68,8 +68,8 @@ jobs:
 
               const job_ids = [];
 
-              // get all the job ids
-              job_urls.forEach(job_url => {
+              // get all the ids of the jobs
+              for (const job_url of job_urls) {
                 const job_response = await fetch(job_url, {
                   headers: {
                     Authorization: `Bearer ${GITHUB_TOKEN}`,
@@ -77,6 +77,12 @@ jobs:
                   },
                 });
 
-                console.log(job_response);
-              });
+                if (!job_response.ok) {
+                  throw new Error(`Failed to fetch job: ${job_response.status} ${job_response.statusText}`);
+                }
+
+                const job_data = await job_response.json();
+                console.log(job_data); // Process job data as needed
+                job_ids.push(job_data.id); // Example of collecting job IDs
+              }
             })();
