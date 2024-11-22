@@ -40,7 +40,8 @@ jobs:
 
               prs.forEach(pr => console.log(pr));
             })();
-            core.setOutput("lastVar", "test!!!!");
+            const sendVar = "test!!!!";  // This is the value we want to pass
+            console.log(`::set-output name=send_var::${sendVar}`);
 
       - name: Get the last valid work flow for each branches
         env:
@@ -48,7 +49,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const myVarFromStep1 = "${{ steps.step1.outputs.lastVar }}";
+            const myVarFromStep1 = "${{ steps.step1.outputs.send_var }}";
             console.log("Received variable from Step 1:", myVarFromStep1);
 
             
