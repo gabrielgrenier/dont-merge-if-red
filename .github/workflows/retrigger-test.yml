@@ -63,11 +63,12 @@ jobs:
               // get the last job URL for each workflow
               branch_names.forEach(branch_name => {
                 const branch_run = workflow_runs.find(run => run.name === 'check-jenkins-master-build' && run.head_branch === branch_name);
-                job_urls.push(branch_run.jobs_url);
+                //job_urls.push(branch_run.jobs_url);
+                console.log(branch_run);
               });
 
 
               // get all the jobs ids
-              console.log(job_urls);
+              //console.log(job_urls);
 
             })();
