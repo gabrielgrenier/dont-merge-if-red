@@ -1,26 +1,98 @@
-name: Retrigger Build Check On PRs
+name: retrigger-builds-on-merges
 
 on:
   push:
     branches:
-      - "main"
+      - "**"
 
 jobs:
   retrigger-pull-requests:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - name: Retrigger Workflows for Open PRs
+      - name: Get the necessary informations and re-trigger the build checks
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Get open PRs and dispatch workflow directly
-          curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&base=main" | \
-            jq -r '.[].head.ref' | \
-            while read -r source_branch; do
-              curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
-                -H "Accept: application/vnd.github+json" \
-                "https://api.github.com/repos/${{ github.repository }}/actions/workflows/check-jenkins-master-build.yml/dispatches" \
-                -d "{\"ref\": \"$source_branch\"}"
-          done
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+            const repository = process.env.GITHUB_REPOSITORY;
+            const prs_url = `https://api.github.com/repos/${repository}/pulls?state=open&base=main`;
+            const workflow_url = `https://api.github.com/repos/${repository}/actions/runs`;
+
+            // fetch opened PRs
+            (async () => {
+              const pr_response = await fetch(prs_url, {
+                headers: {
+                  Authorization: `Bearer ${GITHUB_TOKEN}`,
+                  Accept: 'application/vnd.github+json',
+                },
+              });
+              if (!pr_response.ok) {
+                throw new Error(`Failed to fetch PRs: ${pr_response.status} ${pr_response.statusText}`);
+              }
+
+              const prs = await pr_response.json();
+              const branch_names = [];
+
+              // get the name of the branches with active PRs
+              prs.forEach(pr => {
+                let current_branch_name = pr.head.ref;
+                if(branch_names.indexOf(current_branch_name) === -1){
+                  branch_names.push(current_branch_name);
+                }
+              });
+
+              // get the list of the workflow that were executed
+              const workflow_response = await fetch(workflow_url, {
+                headers: {
+                  Authorization: `Bearer ${GITHUB_TOKEN}`,
+                  Accept: 'application/vnd.github+json',
+                },
+              });
+              if (!workflow_response.ok) {
+                throw new Error(`Failed to fetch PRs: ${workflow_response.status} ${workflow_response.statusText}`);
+              }
+
+              const workflow_runs = (await workflow_response.json()).workflow_runs;
+              const job_urls = [];
+
+              // get the last job URL for each workflow
+              branch_names.forEach(branch_name => {
+                const branch_run = workflow_runs.find(run => run.name === 'check-jenkins-master-build' && run.head_branch === branch_name);
+                if(branch_run){
+                  job_urls.push(branch_run.jobs_url);
+                }
+              });
+
+              const job_ids = [];
+
+              // get all the ids of the jobs
+              for (const job_url of job_urls) {
+                const job_response = await fetch(job_url, {
+                  headers: {
+                    Authorization: `Bearer ${GITHUB_TOKEN}`,
+                    Accept: 'application/vnd.github+json',
+                  },
+                });
+
+                if (!job_response.ok) {
+                  throw new Error(`Failed to fetch job: ${job_response.status} ${job_response.statusText}`);
+                }
+
+                const job_data = await job_response.json();
+                job_ids.push(job_data.id);
+              }
+
+              // re-trigger each of the workflow jobs
+              job_ids.forEach(job_id => {
+                fetch(`https://api.github.com/repos/${repository}/actions/jobs/${job_id}/rerun`, {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${GITHUB_TOKEN}`,
+                    Accept: 'application/vnd.github+json',
+                  },
+                });
+              });
+            })();
