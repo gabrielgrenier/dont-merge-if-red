@@ -55,7 +55,7 @@ jobs:
                 throw new Error(`Failed to fetch PRs: ${workflow_response.status} ${workflow_response.statusText}`);
               }
 
-              const workflow_runs = await workflow_response.json().workflow_runs;
+              const workflow_runs = await workflow_response.json();
               const job_urls = [];
 
               console.log(workflow_runs);
