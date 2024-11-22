@@ -1,9 +1,9 @@
 name: Check Jenkins Master Build Status
 
 on:
-  #pull_request:
-  #  branches:
-  #    - "**"
+  pull_request:
+    branches:
+      - "**"
   workflow_dispatch:
     branches:
       - "**"
