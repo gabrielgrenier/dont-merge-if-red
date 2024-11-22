@@ -39,8 +39,8 @@ jobs:
               //console.log('Pulls URL:', pullsUrl);
 
               prs.forEach(pr => console.log(pr));
-              core.setOutput("send_var", "test!!!!");
             })();
+            core.setOutput("lastVar", "test!!!!");
 
       - name: Get the last valid work flow for each branches
         env:
@@ -48,7 +48,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const myVarFromStep1 = "${{ steps.step1.outputs.send_var }}";
+            const myVarFromStep1 = "${{ steps.step1.outputs.lastVar }}";
             console.log("Received variable from Step 1:", myVarFromStep1);
 
             
