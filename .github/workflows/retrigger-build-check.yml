@@ -80,14 +80,15 @@ jobs:
                   throw new Error(`Failed to fetch job: ${job_response.status} ${job_response.statusText}`);
                 }
 
-                const job_data = await job_response.json();
-                console.log(job_data);
-                job_ids.push(job_data.id);
+                const job_data = (await job_response.json()).jobs[0];
+                if(job_data) {
+                  job_ids.push(job_data.id);
+                }
               }
 
               // re-trigger each of the workflow jobs
               job_ids.forEach(job_id => {
-                // console.log(`https://api.github.com/repos/${repository}/actions/jobs/${job_id}/rerun`);
+                console.log(`https://api.github.com/repos/${repository}/actions/jobs/${job_id}/rerun`);
                 fetch(`https://api.github.com/repos/${repository}/actions/jobs/${job_id}/rerun`, {
                   method: 'POST',
                   headers: {
