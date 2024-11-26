@@ -43,7 +43,7 @@ jobs:
                 }
               });
 
-              // TODO: for each branch get the jobs url (see parameter of get runs method)
+              const job_urls = [];
               for (const b_name of branch_names) {
                 const workflow_response = await fetch(`${workflow_url}?branch=${b_name}`, {
                   headers: {
@@ -57,7 +57,10 @@ jobs:
                 }
 
                 job_url = (await workflow_response.json()).workflow_runs.filter((run) => run.name === 'check-jenkins-master-build')[0].jobs_url;
-                console.log(job_url);
+                
+                if(job_url) {
+                  job_urls.push(job_url);
+                }
               };
 
               /*
