@@ -9,19 +9,19 @@ jobs:
   retrigger-pull-requests:
     runs-on: ubuntu-latest
     steps:
-      - name: Get the necessary informations and re-trigger the build checks
+      - name: Get the necessary information and re-trigger the build checks
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/github-script@v6
         with:
           script: |
-            const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-            const repository = process.env.GITHUB_REPOSITORY;
-            const prs_url = `https://api.github.com/repos/${repository}/pulls?state=open&base=main`;
-            const workflow_url = `https://api.github.com/repos/${repository}/actions/runs`;
-
-            // fetch opened PRs
             (async () => {
+              const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+              const repository = process.env.GITHUB_REPOSITORY;
+              const prs_url = `https://api.github.com/repos/${repository}/pulls?state=open&base=main`;
+              const workflow_url = `https://api.github.com/repos/${repository}/actions/runs`;
+              
+              // fetch opened PRs
               const pr_response = await fetch(prs_url, {
                 headers: {
                   Authorization: `Bearer ${GITHUB_TOKEN}`,
