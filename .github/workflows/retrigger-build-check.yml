@@ -88,6 +88,7 @@ jobs:
 
               // re-trigger each of the workflow jobs
               job_ids.forEach(job_id => {
+                /*
                 console.log(`https://api.github.com/repos/${repository}/actions/jobs/${job_id}/rerun`);
                 fetch(`https://api.github.com/repos/${repository}/actions/jobs/${job_id}/rerun`, {
                   method: 'POST',
@@ -96,5 +97,6 @@ jobs:
                     Accept: 'application/vnd.github+json',
                   },
                 });
+                */
               });
             })();
