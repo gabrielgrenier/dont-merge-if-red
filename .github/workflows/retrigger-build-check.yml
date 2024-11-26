@@ -56,8 +56,8 @@ jobs:
                   throw new Error(`Failed to fetch job: ${job_response.status} ${job_response.statusText}`);
                 }
 
-                console.log(await workflow_response.json())
-              });
+                console.log(await workflow_response.json());
+              };
 
               /*
               // get the list of the workflow that were executed
