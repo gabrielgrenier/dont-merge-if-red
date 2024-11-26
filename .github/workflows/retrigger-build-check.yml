@@ -43,6 +43,23 @@ jobs:
                 }
               });
 
+              // TODO: for each branch get the jobs url (see parameter of get runs method)
+              branch_names.forEach(b_name => {
+                const workflow_response = await fetch(`${workflow_url}?branch=${b_name}`, {
+                  headers: {
+                    Authorization: `Bearer ${GITHUB_TOKEN}`,
+                    Accept: 'application/vnd.github+json',
+                  },
+                });
+
+                if (!workflow_response.ok) {
+                  throw new Error(`Failed to fetch job: ${job_response.status} ${job_response.statusText}`);
+                }
+
+                console.log(await workflow_response.json())
+              });
+
+              /*
               // get the list of the workflow that were executed
               const workflow_response = await fetch(workflow_url, {
                 headers: {
@@ -64,7 +81,9 @@ jobs:
                   job_urls.push(branch_run.jobs_url);
                 }
               });
+              */
 
+              /*
               const job_ids = [];
 
               // get all the ids of the jobs
@@ -97,4 +116,5 @@ jobs:
                   },
                 });
               });
+              */
             })();
