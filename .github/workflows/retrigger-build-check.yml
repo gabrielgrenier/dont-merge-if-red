@@ -44,7 +44,7 @@ jobs:
               });
 
               // TODO: for each branch get the jobs url (see parameter of get runs method)
-              branch_names.forEach(b_name => {
+              for (const b_name of branch_names) {
                 const workflow_response = await fetch(`${workflow_url}?branch=${b_name}`, {
                   headers: {
                     Authorization: `Bearer ${GITHUB_TOKEN}`,
