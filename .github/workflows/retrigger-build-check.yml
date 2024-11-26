@@ -56,7 +56,6 @@ jobs:
                   throw new Error(`Failed to fetch job: ${job_response.status} ${job_response.statusText}`);
                 }
 
-                console.log(await workflow_response.json());
                 job_url = (await workflow_response.json()).workflow_runs.filter((run) => run.name === 'check-jenkins-master-build')[0].jobs_url;
                 console.log(job_url);
               };
