@@ -43,6 +43,7 @@ jobs:
                 }
               });
 
+              // Get the job URLs of each branch with an active PR
               const job_urls = [];
               for (const b_name of branch_names) {
                 const workflow_response = await fetch(`${workflow_url}?branch=${b_name}`, {
@@ -63,31 +64,6 @@ jobs:
                 }
               };
 
-              /*
-              // get the list of the workflow that were executed
-              const workflow_response = await fetch(workflow_url, {
-                headers: {
-                  Authorization: `Bearer ${GITHUB_TOKEN}`,
-                  Accept: 'application/vnd.github+json',
-                },
-              });
-              if (!workflow_response.ok) {
-                throw new Error(`Failed to fetch PRs: ${workflow_response.status} ${workflow_response.statusText}`);
-              }
-
-              const workflow_runs = (await workflow_response.json()).workflow_runs;
-              const job_urls = [];
-
-              // get the last job URL for each workflow
-              branch_names.forEach(branch_name => {
-                const branch_run = workflow_runs.find(run => run.name === 'check-jenkins-master-build' && run.head_branch === branch_name);
-                if(branch_run){
-                  job_urls.push(branch_run.jobs_url);
-                }
-              });
-              */
-
-              /*
               const job_ids = [];
 
               // get all the ids of the jobs
@@ -103,11 +79,12 @@ jobs:
                   throw new Error(`Failed to fetch job: ${job_response.status} ${job_response.statusText}`);
                 }
 
-                const job_data = (await job_response.json()).jobs[0];
-                if(job_data) {
-                  job_ids.push(job_data.id);
+                const job_id = (await job_response.json()).jobs[0].id;
+                if(job_id) {
+                  job_ids.push(job_id);
                 }
               }
+              console.log(job_ids);
 
               // re-trigger each of the workflow jobs
               job_ids.forEach(job_id => {
@@ -120,5 +97,4 @@ jobs:
                   },
                 });
               });
-              */
             })();
