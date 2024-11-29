@@ -24,10 +24,10 @@ jobs:
           JENKINS_TOKEN: ${{ secrets.JENKINS_TOKEN }}
         run: |
           # Fetch the last master build and check if it's green or not
-          # response=$(curl -s -u "$JENKINS_USER:$JENKINS_TOKEN" "$JENKINS_URL/job/master-build/lastBuild/api/json")
-          # build_result=$(echo "$response" | jq -r '.result')
-          
-          # if [ "$build_result" != "SUCCESS" ]; then
-          #  echo "Jenkins master build is not green. Current status: $build_result"
-          #  exit 1
-          # fi
+          response=$(curl -s -u "$JENKINS_USER:$JENKINS_TOKEN" "$JENKINS_URL/job/shotgun/job/shotgun-app/job/master/lastBuild/api/json")
+          build_result=$(echo "$response" | jq -r '.result')
+        
+          if [ "$build_result" != "SUCCESS" ]; then
+           echo "Jenkins master build is not green. Current status: $build_result"
+           exit 1
+          fi
