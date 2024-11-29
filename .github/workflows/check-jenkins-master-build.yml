@@ -25,6 +25,7 @@ jobs:
         run: |
           echo "First 3 characters of JENKINS_USER: ${JENKINS_USER:0:3}"
           echo "First 3 characters of JENKINS_TOKEN: ${JENKINS_TOKEN:0:3}"
+          echo "URL: ${JENKINS_URL}"
 
           crumb=$(curl -s -u "$JENKINS_USER:$JENKINS_TOKEN" "$JENKINS_URL/crumbIssuer/api/json" | jq -r '.crumb')
           response=$(curl -s -u "$JENKINS_USER:$JENKINS_TOKEN" -H "Jenkins-Crumb:$crumb" "$JENKINS_URL/job/shotgun/job/shotgun-app/job/master/lastBuild/api/json")
