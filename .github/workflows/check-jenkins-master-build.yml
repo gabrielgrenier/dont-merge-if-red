@@ -23,12 +23,13 @@ jobs:
           JENKINS_USER: ${{ secrets.JENKINS_USER }}
           JENKINS_TOKEN: ${{ secrets.JENKINS_TOKEN }}
         run: |
-          # Fetch the last master build and check if it's green or not
-          echo "$JENKINS_URL/job/shotgun/job/shotgun-app/job/master/lastBuild/api/json"
-          response=$(curl -s -u "$JENKINS_USER:$JENKINS_TOKEN" "$JENKINS_URL/job/shotgun/job/shotgun-app/job/master/lastBuild/api/json")
+          crumb=$(curl -s -u "$JENKINS_USER:$JENKINS_TOKEN" "$JENKINS_URL/crumbIssuer/api/json" | jq -r '.crumb')
+          response=$(curl -s -u "$JENKINS_USER:$JENKINS_TOKEN" -H "Jenkins-Crumb:$crumb" "$JENKINS_URL/job/shotgun/job/shotgun-app/job/master/lastBuild/api/json")
+
+          echo "Response: $response"
           build_result=$(echo "$response" | jq -r '.result')
-        
+
           if [ "$build_result" != "SUCCESS" ]; then
-           echo "Jenkins master build is not green. Current status: $build_result"
-           exit 1
+            echo "Jenkins master build is not green. Current status: $build_result"
+            exit 1
           fi
