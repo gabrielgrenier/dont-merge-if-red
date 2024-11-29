@@ -3,25 +3,25 @@ name: retrigger-builds-on-merges
 on:
   push:
     branches:
-      - "**"
+      - "main"
 
 jobs:
   retrigger-pull-requests:
     runs-on: ubuntu-latest
     steps:
-      - name: Get the necessary informations and re-trigger the build checks
+      - name: Get the necessary information and re-trigger the build checks
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/github-script@v6
         with:
           script: |
-            const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-            const repository = process.env.GITHUB_REPOSITORY;
-            const prs_url = `https://api.github.com/repos/${repository}/pulls?state=open&base=main`;
-            const workflow_url = `https://api.github.com/repos/${repository}/actions/runs`;
-
-            // fetch opened PRs
             (async () => {
+              const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+              const repository = process.env.GITHUB_REPOSITORY;
+              const prs_url = `https://api.github.com/repos/${repository}/pulls?state=open&base=main`;
+              const workflow_url = `https://api.github.com/repos/${repository}/actions/runs`;
+              
+              // fetch opened PRs
               const pr_response = await fetch(prs_url, {
                 headers: {
                   Authorization: `Bearer ${GITHUB_TOKEN}`,
@@ -31,11 +31,10 @@ jobs:
               if (!pr_response.ok) {
                 throw new Error(`Failed to fetch PRs: ${pr_response.status} ${pr_response.statusText}`);
               }
-
               const prs = await pr_response.json();
-              const branch_names = [];
 
               // get the name of the branches with active PRs
+              const branch_names = [];
               prs.forEach(pr => {
                 let current_branch_name = pr.head.ref;
                 if(branch_names.indexOf(current_branch_name) === -1){
@@ -43,31 +42,29 @@ jobs:
                 }
               });
 
-              // get the list of the workflow that were executed
-              const workflow_response = await fetch(workflow_url, {
-                headers: {
-                  Authorization: `Bearer ${GITHUB_TOKEN}`,
-                  Accept: 'application/vnd.github+json',
-                },
-              });
-              if (!workflow_response.ok) {
-                throw new Error(`Failed to fetch PRs: ${workflow_response.status} ${workflow_response.statusText}`);
-              }
-
-              const workflow_runs = (await workflow_response.json()).workflow_runs;
+              // Get the job URLs of each branch with an active PR
               const job_urls = [];
+              for (const b_name of branch_names) {
+                const workflow_response = await fetch(`${workflow_url}?branch=${b_name}`, {
+                  headers: {
+                    Authorization: `Bearer ${GITHUB_TOKEN}`,
+                    Accept: 'application/vnd.github+json',
+                  },
+                });
 
-              // get the last job URL for each workflow
-              branch_names.forEach(branch_name => {
-                const branch_run = workflow_runs.find(run => run.name === 'check-jenkins-master-build' && run.head_branch === branch_name);
-                if(branch_run){
-                  job_urls.push(branch_run.jobs_url);
+                if (!workflow_response.ok) {
+                  throw new Error(`Failed to fetch job: ${job_response.status} ${job_response.statusText}`);
                 }
-              });
 
-              const job_ids = [];
+                job_url = (await workflow_response.json()).workflow_runs.filter((run) => run.name === 'check-jenkins-master-build')[0].jobs_url;
+                
+                if(job_url) {
+                  job_urls.push(job_url);
+                }
+              };
 
               // get all the ids of the jobs
+              const job_ids = [];
               for (const job_url of job_urls) {
                 const job_response = await fetch(job_url, {
                   headers: {
@@ -80,8 +77,10 @@ jobs:
                   throw new Error(`Failed to fetch job: ${job_response.status} ${job_response.statusText}`);
                 }
 
-                const job_data = await job_response.json();
-                job_ids.push(job_data.id);
+                const job_id = (await job_response.json()).jobs[0].id;
+                if(job_id) {
+                  job_ids.push(job_id);
+                }
               }
 
               // re-trigger each of the workflow jobs
